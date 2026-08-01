@@ -7,7 +7,9 @@ import expenseRoutes from "./routes/expenses";
 import creditRoutes from "./routes/credits";
 import dashboardRoutes from "./routes/dashboard";
 import pushRoutes from "./routes/push";
+import plaidRoutes from "./routes/plaid";
 import { scheduleReminderJob } from "./lib/reminders";
+import { scheduleBankSyncJob } from "./lib/bankSync";
 
 const app = express();
 
@@ -22,6 +24,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/credits", creditRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/push", pushRoutes);
+app.use("/api/plaid", plaidRoutes);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
@@ -32,4 +35,5 @@ const port = Number(process.env.PORT) || 4000;
 app.listen(port, () => {
   console.log(`HisaabKitaab API listening on port ${port}`);
   scheduleReminderJob();
+  scheduleBankSyncJob();
 });

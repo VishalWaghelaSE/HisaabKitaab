@@ -12,13 +12,14 @@ model User {
   email          String   @unique
   passwordHash   String
   name           String
-  currency       String   @default("INR")
+  currency       String   @default("CAD")
   createdAt      DateTime @default(now())
 
   bills             Bill[]
   expenses          Expense[]
   credits           Credit[]
   pushSubscriptions PushSubscription[]
+  bankConnections   BankConnection[]
 }
 
 // Recurrence values: "NONE" | "WEEKLY" | "MONTHLY" | "YEARLY" (SQLite has no native enum support)
@@ -51,6 +52,7 @@ model Expense {
   date      DateTime @default(now())
   notes     String?
   billId    String?
+  plaidTransactionId String? @unique
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -64,6 +66,7 @@ model Credit {
   amount    Float
   date      DateTime @default(now())
   notes     String?
+  plaidTransactionId String? @unique
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -79,4 +82,36 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// One connected bank/credit-card login (a Plaid "Item"). accessToken is
+// server-only and must never be sent to the client.
+model BankConnection {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId          String   @unique
+  accessToken     String
+  institutionName String?
+  cursor          String?
+  lastSyncedAt    DateTime?
+  createdAt       DateTime @default(now())
+
+  accounts BankAccount[]
+
+  @@index([userId])
+}
+
+model BankAccount {
+  id             String         @id @default(uuid())
+  connectionId   String
+  connection     BankConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  plaidAccountId String         @unique
+  name           String
+  mask           String?
+  type           String?
+  subtype        String?
+  createdAt      DateTime       @default(now())
+
+  @@index([connectionId])
 }

@@ -27,6 +27,7 @@ export interface Expense {
   date: string;
   notes: string | null;
   billId: string | null;
+  plaidTransactionId: string | null;
 }
 
 export interface Credit {
@@ -35,6 +36,23 @@ export interface Credit {
   amount: number;
   date: string;
   notes: string | null;
+  plaidTransactionId: string | null;
+}
+
+export interface BankAccount {
+  id: string;
+  name: string;
+  mask: string | null;
+  type: string | null;
+  subtype: string | null;
+}
+
+export interface BankConnection {
+  id: string;
+  institutionName: string | null;
+  lastSyncedAt: string | null;
+  createdAt: string;
+  accounts: BankAccount[];
 }
 
 export interface DashboardSummary {

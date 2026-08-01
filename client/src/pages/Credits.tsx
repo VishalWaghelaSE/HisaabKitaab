@@ -26,7 +26,7 @@ const emptyForm: CreditFormState = {
 
 export default function Credits() {
   const { user } = useAuth();
-  const currency = user?.currency ?? "INR";
+  const currency = user?.currency ?? "CAD";
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,7 +139,14 @@ export default function Credits() {
             className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900"
           >
             <div>
-              <span className="font-medium text-slate-900 dark:text-white">{credit.source}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-900 dark:text-white">{credit.source}</span>
+                {credit.plaidTransactionId && (
+                  <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[11px] text-teal-600 dark:bg-teal-500/10 dark:text-teal-300">
+                    Synced
+                  </span>
+                )}
+              </div>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{formatDate(credit.date)}</p>
             </div>
             <div className="flex items-center gap-3">

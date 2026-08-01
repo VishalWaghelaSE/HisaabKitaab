@@ -29,7 +29,7 @@ const emptyForm: ExpenseFormState = {
 
 export default function Expenses() {
   const { user } = useAuth();
-  const currency = user?.currency ?? "INR";
+  const currency = user?.currency ?? "CAD";
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -152,6 +152,11 @@ export default function Expenses() {
                 {expense.billId && (
                   <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                     From bill
+                  </span>
+                )}
+                {expense.plaidTransactionId && (
+                  <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[11px] text-teal-600 dark:bg-teal-500/10 dark:text-teal-300">
+                    Synced
                   </span>
                 )}
               </div>

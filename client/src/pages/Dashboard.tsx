@@ -38,7 +38,7 @@ export default function Dashboard() {
   if (error) return <p className="text-rose-600 dark:text-rose-400">{error}</p>;
   if (!summary) return null;
 
-  const currency = user?.currency ?? "INR";
+  const currency = user?.currency ?? "CAD";
   const categoryData = Object.entries(summary.categoryBreakdown).map(([name, value]) => ({ name, value }));
   const monthLabel = new Date(summary.year, summary.month - 1, 1).toLocaleString("en-US", {
     month: "long",

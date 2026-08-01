@@ -37,7 +37,7 @@ router.post("/register", async (req, res) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, currency: currency ?? "INR" },
+    data: { name, email, passwordHash, currency: currency ?? "CAD" },
   });
 
   const token = signToken(user.id);

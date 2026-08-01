@@ -15,6 +15,7 @@ A bill, expense, and income tracker web app that works on mobile and desktop bro
 - **Income / Credits**: money received, by source
 - **Dashboard**: monthly totals, net, category breakdown chart, 6-month trend, upcoming (next 7 days) and overdue bill lists
 - **Reminders**: browser push notifications for bills due soon or overdue, sent daily by a server cron job, plus in-app banners on the dashboard
+- **Bank & credit card connections**: link an account (via [Plaid](https://plaid.com)) from Settings to pull in transactions automatically — spending becomes an expense, deposits become income, synced every few hours plus on-demand. Optional; the app is fully manual-entry without it.
 - Responsive layout: top nav on desktop, bottom tab bar on mobile; installable to your home screen
 
 ## Project layout
@@ -44,6 +45,8 @@ npx web-push generate-vapid-keys
 
 Copy the printed public/private keys into `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` in `server/.env` (and set `VAPID_SUBJECT` to a `mailto:` address). Without these, the app still works fully — you just won't get push reminders (in-app dashboard reminders still show).
 
+To enable bank/credit card connections, sign up free at [dashboard.plaid.com/signup](https://dashboard.plaid.com/signup) and put your Sandbox `client_id`/`secret` into `PLAID_CLIENT_ID` / `PLAID_SECRET` in `server/.env`. In Sandbox you can connect fake institutions (e.g. "Platypus Bank", username `user_good`, password `pass_good`) to try the full flow without a real bank. Moving to Production (real banks) requires separate approval from Plaid and has per-connection costs — see their pricing. Without these keys, the Settings page just reports connections as unavailable and the rest of the app is unaffected.
+
 ### 2. Client
 
 ```bash
@@ -65,5 +68,5 @@ In production, set `CLIENT_ORIGIN` on the server to your deployed client URL, an
 
 ## Notes
 
-- Currency defaults to INR; change `currency` on the user record (via the API) to display a different currency.
+- Currency defaults to CAD; change `currency` on the user record (via the API) to display a different currency.
 - The reminder cron job runs daily at 8 AM server time and pushes notifications to every subscribed device for bills due within their configured reminder window (default 3 days) or already overdue.

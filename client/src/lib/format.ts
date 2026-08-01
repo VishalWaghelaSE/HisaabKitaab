@@ -1,6 +1,6 @@
-export function formatCurrency(amount: number, currency = "INR"): string {
+export function formatCurrency(amount: number, currency = "CAD"): string {
   try {
-    return new Intl.NumberFormat("en-IN", {
+    return new Intl.NumberFormat(undefined, {
       style: "currency",
       currency,
       maximumFractionDigits: 2,

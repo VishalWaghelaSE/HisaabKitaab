@@ -40,7 +40,7 @@ const emptyForm: BillFormState = {
 
 export default function Bills() {
   const { user } = useAuth();
-  const currency = user?.currency ?? "INR";
+  const currency = user?.currency ?? "CAD";
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
