@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+dist
+**/dist
+client/dev-dist
+.git
+.claude
+*.log
+server/.env
+server/dev.db
+server/dev.db-journal

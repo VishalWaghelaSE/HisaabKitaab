@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hisaabkitaab
+      POSTGRES_PASSWORD: hisaabkitaab
+      POSTGRES_DB: hisaabkitaab
+    ports:
+      - "5432:5432"
+    volumes:
+      - hisaabkitaab-db:/var/lib/postgresql/data
+
+volumes:
+  hisaabkitaab-db:

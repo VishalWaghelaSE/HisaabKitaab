@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -22,7 +22,7 @@ model User {
   bankConnections   BankConnection[]
 }
 
-// Recurrence values: "NONE" | "WEEKLY" | "MONTHLY" | "YEARLY" (SQLite has no native enum support)
+// Recurrence values: "NONE" | "WEEKLY" | "MONTHLY" | "YEARLY"
 model Bill {
   id                String     @id @default(uuid())
   userId            String

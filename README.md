@@ -5,7 +5,7 @@ A bill, expense, and income tracker web app that works on mobile and desktop bro
 ## Stack
 
 - **Client**: React + Vite + TypeScript + Tailwind CSS, React Router, Recharts, installable PWA (service worker via `vite-plugin-pwa`)
-- **Server**: Node.js + Express + TypeScript, Prisma ORM with SQLite, JWT auth, Web Push (VAPID) + `node-cron` for scheduled reminders
+- **Server**: Node.js + Express + TypeScript, Prisma ORM with PostgreSQL, JWT auth, Web Push (VAPID) + `node-cron` for scheduled reminders
 
 ## Features
 
@@ -21,20 +21,30 @@ A bill, expense, and income tracker web app that works on mobile and desktop bro
 ## Project layout
 
 ```
-server/   Express API + Prisma schema (SQLite)
+server/   Express API + Prisma schema (PostgreSQL)
 client/   React app (Vite)
 ```
 
 ## Getting started
 
+### 0. Database
+
+The app needs a Postgres database. For local development, the easiest way is Docker:
+
+```bash
+docker compose up -d db   # starts Postgres on localhost:5432 (see docker-compose.yml)
+```
+
+Or point `DATABASE_URL` at any Postgres instance (a free one from [Neon](https://neon.tech), [Supabase](https://supabase.com), or Railway's Postgres plugin all work).
+
 ### 1. Server
 
 ```bash
 cd server
-cp .env.example .env
+cp .env.example .env     # DATABASE_URL already matches the docker-compose Postgres
 npm install
-npx prisma migrate dev   # creates dev.db and applies the schema
-npm run dev              # http://localhost:4000
+npx prisma migrate dev   # applies the schema
+npm run dev               # http://localhost:4000
 ```
 
 To enable push notifications, generate a VAPID key pair and put them in `server/.env`:
@@ -57,14 +67,23 @@ npm run dev   # http://localhost:5173
 
 The dev server proxies `/api` to `http://localhost:4000`, so run both the server and client together during development.
 
-### 3. Production build
+### 3. Deploying (Railway)
 
-```bash
-cd server && npm run build && npm start
-cd client && npm run build   # outputs static files to client/dist, deploy behind any static host / reverse proxy to the API
-```
+The root `Dockerfile` builds the client and server together into a single image: the server serves the built client as static files and answers `/api/*` itself, so there's only one service to deploy and no CORS/proxy setup needed in production.
 
-In production, set `CLIENT_ORIGIN` on the server to your deployed client URL, and point the client's requests at the deployed API (e.g. via a reverse proxy so `/api` reaches the server, matching the dev setup).
+1. Push this repo to GitHub (already done if you're reading this from the repo) and sign up at [railway.app](https://railway.app).
+2. **New Project → Deploy from GitHub repo**, pick this repo. Railway detects `railway.json` and builds the root `Dockerfile` automatically.
+3. **Add a database**: in the same project, click **New → Database → PostgreSQL**. Railway provisions it and exposes a `DATABASE_URL` — reference it in your app service's variables as `${{Postgres.DATABASE_URL}}` (Railway's variable-reference syntax) so it's wired up automatically.
+4. On the app service, set these **Variables**:
+   - `DATABASE_URL` → `${{Postgres.DATABASE_URL}}` (from step 3)
+   - `JWT_SECRET` → a long random string
+   - `CLIENT_ORIGIN` → your Railway app URL (e.g. `https://your-app.up.railway.app`) — same-origin since client + API are served together, but the server still checks it for CORS safety
+   - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` → from `npx web-push generate-vapid-keys` (optional, enables push reminders)
+   - `PLAID_CLIENT_ID` / `PLAID_SECRET` / `PLAID_ENV` / `PLAID_PRODUCTS` / `PLAID_COUNTRY_CODES` → optional, enables bank connections
+5. Deploy. On boot, `npm start` runs `prisma migrate deploy` against the Postgres instance before starting the server, so schema changes apply automatically on every deploy.
+6. Railway assigns a public URL under **Settings → Networking → Generate Domain**; that's the whole app (client + API).
+
+Any other Docker-friendly host (Fly.io, Render, a plain VPS) works the same way — build the root `Dockerfile`, point `DATABASE_URL` at a Postgres instance, and set the same environment variables.
 
 ## Notes
 

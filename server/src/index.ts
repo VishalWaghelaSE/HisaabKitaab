@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "path";
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth";
@@ -25,6 +26,12 @@ app.use("/api/credits", creditRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/plaid", plaidRoutes);
+
+const clientDist = path.join(__dirname, "../public");
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(clientDist));
+  app.get(/^\/(?!api).*/, (_req, res) => res.sendFile(path.join(clientDist, "index.html")));
+}
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
