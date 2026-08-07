@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  name           String
+  currency       String   @default("CAD")
+  createdAt      DateTime @default(now())
+
+  bills             Bill[]
+  expenses          Expense[]
+  credits           Credit[]
+  pushSubscriptions PushSubscription[]
+  bankConnections   BankConnection[]
+}
+
+// Recurrence values: "NONE" | "WEEKLY" | "MONTHLY" | "YEARLY"
+model Bill {
+  id                String     @id @default(uuid())
+  userId            String
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  amount            Float
+  category          String     @default("General")
+  dueDate           DateTime
+  recurrence        String     @default("NONE")
+  reminderDaysBefore Int       @default(3)
+  isPaid            Boolean    @default(false)
+  notes             String?
+  lastReminderSentAt DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  amount    Float
+  category  String   @default("General")
+  date      DateTime @default(now())
+  notes     String?
+  billId    String?
+  plaidTransactionId String? @unique
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Credit {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source    String
+  amount    Float
+  date      DateTime @default(now())
+  notes     String?
+  plaidTransactionId String? @unique
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// One connected bank/credit-card login (a Plaid "Item"). accessToken is
+// server-only and must never be sent to the client.
+model BankConnection {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId          String   @unique
+  accessToken     String
+  institutionName String?
+  cursor          String?
+  lastSyncedAt    DateTime?
+  createdAt       DateTime @default(now())
+
+  accounts BankAccount[]
+
+  @@index([userId])
+}
+
+model BankAccount {
+  id             String         @id @default(uuid())
+  connectionId   String
+  connection     BankConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  plaidAccountId String         @unique
+  name           String
+  mask           String?
+  type           String?
+  subtype        String?
+  createdAt      DateTime       @default(now())
+
+  @@index([connectionId])
+}
